@@ -131,7 +131,7 @@ function CurrencyConverter() {
             <LineChart data={forecastData} margin={{ top: 10, right: 30, left: 10, bottom: 20 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
               <XAxis dataKey="date" tick={{ fontSize: 10, fill: "#6b7280" }}>
-                <Label value="Date (dd/mm)" offset={-10} position="insideBottom" style={{ fill: '#9ca3af', fontSize: 10 }} />
+              <Label value="Date (dd/mm)" offset={-10} position="insideBottom" style={{ fill: '#9ca3af', fontSize: 10 }} />
               </XAxis>
               <YAxis domain={['auto', 'auto']} tick={{ fontSize: 10, fill: "#6b7280" }}>
                 <Label angle={-90} value="Rate" position="insideLeft" style={{ fill: '#9ca3af', fontSize: 10 }} />
