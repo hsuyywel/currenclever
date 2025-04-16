@@ -4,15 +4,8 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 const currencyOptions = ["GBP", "USD", "CNY", "JPY", "SGD", "MYR", "THB"];
-const expenseCategories = [
-  "Food",
-  "Groceries",
-  "Fashion",
-  "Leisures",
-  "Accommodation",
-  "Insurance",
-  "Miscellaneous"
-];
+const expenseCategories = ["Food", "Groceries", "Fashion", "Leisures", "Accommodation", "Insurance", "Miscellaneous"];
+
 
 function Profile() {
   const navigate = useNavigate();
@@ -20,6 +13,7 @@ function Profile() {
   const [error, setError] = useState("");
   const [income, setIncome] = useState([]);
   const [expenses, setExpenses] = useState([]);
+  const [editingIncome, setEditingIncome] = useState(null);
   const [refresh, setRefresh] = useState(false);
   const [showIncomeModal, setShowIncomeModal] = useState(false);
   const [showExpenseModal, setShowExpenseModal] = useState(false);
@@ -47,13 +41,10 @@ function Profile() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email }),
     })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success) {
-          setUser(data.user);
-        } else {
-          setError(data.error || "Failed to load profile.");
-        }
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) setUser(data.user);
+      else setError(data.error || "Failed to load profile.");
       })
       .catch(() => setError("Server error"));
 
@@ -74,9 +65,7 @@ function Profile() {
     });
   };
 
-  useEffect(() => {
-    fetchProfileData();
-  }, [navigate, refresh]);
+  useEffect(() => { fetchProfileData(); }, [navigate, refresh]);
 
   const handleAddIncome = (e) => {
     e.preventDefault();
@@ -91,19 +80,26 @@ function Profile() {
       date: form.date.value,
       note: form.note.value,
     };
-    fetch("http://localhost/CurrenClever_Backend/add_income.php", {
+    let endpoint = "add_income.php";
+    if (editingIncome) {
+      payload.id = editingIncome.id;
+      endpoint = "update_income.php";
+    }
+
+    fetch(`http://localhost/CurrenClever_Backend/${endpoint}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     })
-      .then((res) => res.json())
-      .then((data) => {
+    .then(res => res.json())
+    .then(data => {
         if (data.success) {
-          toast.success("Income added successfully");
+          toast.success(editingIncome ? "Income updated" : "Income added");
           setShowIncomeModal(false);
+          setEditingIncome(null);
           setRefresh(prev => !prev);
         } else {
-          toast.error("Failed to add income");
+          toast.error("Failed to save income");
         }
       })
       .catch(() => toast.error("Server error"));
