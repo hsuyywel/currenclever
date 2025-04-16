@@ -10,6 +10,7 @@ import Profile from "./components/Profile";
 import Signup from "./components/Signup";
 import BudgetEstimation from "./components/BudgetEstimation";
 import Home from "./components/Home";
+import Success from "./components/SUSuccess";
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
         <Route path="/signup" element={<Signup />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/budget" element={<BudgetEstimation />} />
+        <Route path="/success" element={<Success />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
