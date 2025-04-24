@@ -15,7 +15,7 @@ function Income() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  const currencyOptions = ["GBP", "USD", "HKD", "JPY", "EUR"];
+  const currencyOptions = ["GBP", "USD", "HKD", "JPY", "EUR"]; // kept for compatibility
 
   const fetchIncome = () => {
     fetch("http://localhost/CurrenClever_Backend/income.php", {
@@ -111,9 +111,7 @@ function Income() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <input type="number" name="amount" placeholder="Amount" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} required className="w-full border rounded p-2" />
           <select name="currency" value={form.currency} onChange={(e) => setForm({ ...form, currency: e.target.value })} className="w-full border rounded p-2">
-            {currencyOptions.map((c) => (
-              <option key={c}>{c}</option>
-            ))}
+            <option value="GBP">GBP</option>
           </select>
           <input type="date" name="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} required className="w-full border rounded p-2" />
           <input type="text" name="note" placeholder="Note" value={form.note} onChange={(e) => setForm({ ...form, note: e.target.value })} className="w-full border rounded p-2" />
@@ -140,9 +138,7 @@ function Income() {
                 value={chartFilters.currency}
                 onChange={(e) => setChartFilters(prev => ({ ...prev, currency: e.target.value }))}
               >
-                {currencyOptions.map(c => (
-                  <option key={c} value={c}>{c}</option>
-                ))}
+                <option value="GBP">GBP</option>
               </select>
             </div>
           </div>
@@ -190,9 +186,7 @@ function Income() {
                 <th className="p-1">
                   <select className="w-full border p-1 text-xs" value={filters.currency} onChange={(e) => handleFilterChange("currency", e.target.value)}>
                     <option value="">All</option>
-                    {currencyOptions.map((c) => (
-                      <option key={c} value={c}>{c}</option>
-                    ))}
+                    <option value="GBP">GBP</option>
                   </select>
                 </th>
                 <th className="p-1">

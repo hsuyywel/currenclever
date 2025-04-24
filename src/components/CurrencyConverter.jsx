@@ -33,11 +33,14 @@ function CurrencyConverter() {
     try {
       const res = await fetch("http://127.0.0.1:5000/predict", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ currency: `GBP_${toCurrency}` })
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ currency: `GBP_${toCurrency}` }),
+        mode: "cors"  // ✅ make sure this is included
       });
-
       const data = await res.json();
+      console.log("Prediction response:", data);
 
       if (Array.isArray(data)) {
         const formatted = data.map(([date, rate]) => ({

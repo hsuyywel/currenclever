@@ -15,7 +15,7 @@ function Expense() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  const currencyOptions = ["GBP", "USD", "HKD", "JPY", "EUR"];
+  const currencyOptions = ["GBP"];
   const categoryOptions = ["Food", "Groceries", "Fashion", "Leisures", "Accommodation", "Insurance", "Miscellaneous"];
 
   const fetchExpense = (email) => {
