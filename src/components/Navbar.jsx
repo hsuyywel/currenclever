@@ -11,13 +11,13 @@ function Navbar() {
       const email = localStorage.getItem("userEmail");
       setUserEmail(email);
     };
-  
+
     // Initial load
     updateUser();
-  
+
     // Listen for login event
     window.addEventListener("userLoggedIn", updateUser);
-  
+
     return () => {
       window.removeEventListener("userLoggedIn", updateUser);
     };
@@ -26,15 +26,15 @@ function Navbar() {
   const handleLogout = () => {
     // Remove login data
     localStorage.removeItem("userEmail");
-  
+
     // Trigger any listeners
     window.dispatchEvent(new Event("userLoggedOut"));
-  
+
     // Navigate to login, then refresh the page
     navigate("/login");
     setTimeout(() => {
       window.location.reload(); // ✅ refresh so Navbar updates fully
-    }, 100); 
+    }, 100);
   };
 
   return (
@@ -46,29 +46,37 @@ function Navbar() {
         <Link to="/" className="text-gray-700 hover:text-blue-500">Home</Link>
         <Link to="/convert" className="text-gray-700 hover:text-blue-500">Converter</Link>
 
+        {/* ✅ Only show if user is logged in */}
+        {userEmail && (
+          <>
+            <Link to="/income" className="text-gray-700 hover:text-blue-500">Income Mgx</Link>
+            <Link to="/expense" className="text-gray-700 hover:text-blue-500">Expense Mgx</Link>
+            <Link to="/budget" className="text-gray-700 hover:text-blue-500">Budget Estimation</Link>
+          </>
+        )}
+
         {/* Show Login only if user not logged in */}
         {!userEmail && (
           <Link to="/login" className="text-gray-700 hover:text-blue-500">Login</Link>
         )}
 
         {/* Show email and logout if logged in */}
-          {userEmail && (
-    <>
-      <Link
-        to="/profile"
-        className="text-sm text-blue-600 font-semibold hover:underline"
-      >
-        {userEmail}
-      </Link>
-      <button
-        onClick={handleLogout}
-        className="text-sm text-red-500 hover:underline ml-2"
-      >
-        Logout
-      </button>
-    </>
-  )}
-
+        {userEmail && (
+          <>
+            <Link
+              to="/profile"
+              className="text-sm text-blue-600 font-semibold hover:underline"
+            >
+              {userEmail}
+            </Link>
+            <button
+              onClick={handleLogout}
+              className="text-sm text-red-500 hover:underline ml-2"
+            >
+              Logout
+            </button>
+          </>
+        )}
       </div>
     </nav>
   );

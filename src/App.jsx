@@ -11,9 +11,13 @@ import Signup from "./components/Signup";
 import BudgetEstimation from "./components/BudgetEstimation";
 import Home from "./components/Home";
 import Success from "./components/SUSuccess";
+import Income from "./components/Income";
+import Expense from "./components/Expense";
+import { AuthProvider } from "./components/AuthContex";
 
 function App() {
   return (
+    <AuthProvider>
     <Router>
       <Navbar />
       <Routes>
@@ -24,9 +28,13 @@ function App() {
         <Route path="/profile" element={<Profile />} />
         <Route path="/budget" element={<BudgetEstimation />} />
         <Route path="/success" element={<Success />} />
+        <Route path="/expense" element={<Expense />} />
+        <Route path="/income" element={<Income />} />
+
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
+    </AuthProvider>
   );
 }
 

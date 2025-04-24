@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "./AuthContex";
 
 export default function Login() {
   const navigate = useNavigate();
+  const { login } = useAuth(); // ✅ Use login function from context
   const [formData, setFormData] = useState({ email: "", password: "" });
 
   const handleChange = (e) => {
@@ -17,10 +19,16 @@ export default function Login() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(formData)
     });
+
     const result = await res.json();
+
     if (result.success) {
       localStorage.setItem("userEmail", formData.email);
       window.dispatchEvent(new Event("userLoggedIn"));
+
+      // ✅ Also update auth context
+      login({ name: result.name, email: formData.email });
+
       navigate("/profile");
     } else {
       alert(result.error || "Login failed");
