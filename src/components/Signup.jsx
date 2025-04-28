@@ -3,6 +3,7 @@ import React from "react";
 import { useState } from "react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Label } from "recharts";
 import { useNavigate } from "react-router-dom";
+import { BASE_URL } from "../config/api.config";
 
 function Signup() {
   const [formData, setFormData] = useState({
@@ -30,7 +31,7 @@ function Signup() {
     }
 
     try {
-      const response = await fetch("http://localhost/CurrenClever_Backend/signup.php", {
+      const response = await fetch(`${BASE_URL}/signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),

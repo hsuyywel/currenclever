@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Label } from "recharts";
+import { BASE_URL, MODEL_URL } from "../config/api.config";
 
 const currencyList = ["EUR", "GBP", "USD", "HKD", "JPY"];
 const flagEmoji = {
@@ -31,7 +32,7 @@ function CurrencyConverter() {
     setConverted("");
 
     try {
-      const res = await fetch("http://127.0.0.1:5000/predict", {
+      const res = await fetch(`${MODEL_URL}/predict`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"

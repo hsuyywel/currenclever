@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { BASE_URL } from "../config/api.config";
 
 const currencyOptions = ["GBP", "USD", "CNY", "JPY", "SGD", "MYR", "THB"];
 const expenseCategories = ["Food", "Groceries", "Fashion", "Leisures", "Accommodation", "Insurance", "Miscellaneous"];
@@ -35,7 +36,7 @@ function Profile() {
       return;
     }
 
-    fetch("http://localhost/CurrenClever_Backend/get_user.php", {
+    fetch(`${BASE_URL}/user`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email }),
@@ -48,12 +49,12 @@ function Profile() {
       .catch(() => setError("Server error"));
 
     Promise.all([
-      fetch("http://localhost/CurrenClever_Backend/get_income.php", {
+      fetch(`${BASE_URL}/income`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
       }).then(res => res.json()),
-      fetch("http://localhost/CurrenClever_Backend/get_expenses.php", {
+      fetch(`${BASE_URL}/expenses`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
@@ -79,13 +80,12 @@ function Profile() {
       date: form.date.value,
       note: form.note.value,
     };
-    let endpoint = "add_income.php";
+    let endpoint = "income";
     if (editingIncome) {
       payload.id = editingIncome.id;
-      endpoint = "update_income.php";
     }
 
-    fetch(`http://localhost/CurrenClever_Backend/${endpoint}`, {
+    fetch(`${BASE_URL}/${endpoint}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
@@ -118,7 +118,7 @@ function Profile() {
       note: form.note.value,
       category: form.category.value,
     };
-    fetch("http://localhost/CurrenClever_Backend/add_expense.php", {
+    fetch(`${BASE_URL}/expenses`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),

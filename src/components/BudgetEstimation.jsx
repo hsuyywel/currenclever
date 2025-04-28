@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useAuth } from "./AuthContex";
 import PieChartDisplay from "./PieChartDisplay";
+import { MODEL_URL } from "../config/api.config";
 
 const categories = [
   "Food",
@@ -41,8 +42,8 @@ function BudgetEstimation() {
 
     setIsLoading(true);
 
-    const actualURL = `http://127.0.0.1:5000/budget?email=${user.email}&month=${selectedMonth}&year=${selectedYear}`;
-    const estimatedURL = `http://127.0.0.1:5000/budget?email=${user.email}&month=${nextMonth}&year=${nextYear}`;
+    const actualURL = `${MODEL_URL}/budget?email=${user.email}&month=${selectedMonth}&year=${selectedYear}`;
+    const estimatedURL = `${MODEL_URL}/budget?email=${user.email}&month=${nextMonth}&year=${nextYear}`;
 
     Promise.all([axios.get(actualURL), axios.get(estimatedURL)])
       .then(([actualRes, estimatedRes]) => {

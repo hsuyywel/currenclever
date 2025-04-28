@@ -5,6 +5,7 @@ import {
   LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer
 } from "recharts";
 import { startOfWeek, format } from "date-fns"; // ✅ Added
+import { BASE_URL } from "../config/api.config";
 
 function Expense() {
   const [expenseList, setExpenseList] = useState([]);
@@ -20,7 +21,7 @@ function Expense() {
   const categoryOptions = ["Food", "Groceries", "Fashion", "Leisures", "Accommodation", "Insurance", "Miscellaneous"];
 
   const fetchExpense = (email) => {
-    fetch("http://localhost/CurrenClever_Backend/expense.php", {
+    fetch(`${BASE_URL}/expenses`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email }),
@@ -51,7 +52,7 @@ function Expense() {
       ...(editId && { id: editId })
     };
 
-    fetch("http://localhost/CurrenClever_Backend/expense.php", {
+    fetch(`${BASE_URL}/expenses`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),

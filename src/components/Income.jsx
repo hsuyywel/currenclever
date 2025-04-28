@@ -5,6 +5,7 @@ import {
   LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer
 } from "recharts";
 import { startOfWeek, format } from "date-fns"; // ✅ Added for weekly grouping
+import { BASE_URL } from "../config/api.config";
 
 function Income() {
   const [incomeList, setIncomeList] = useState([]);
@@ -19,7 +20,7 @@ function Income() {
   const currencyOptions = ["GBP", "USD", "HKD", "JPY", "EUR"];
 
   const fetchIncome = () => {
-    fetch("http://localhost/CurrenClever_Backend/income.php", {
+    fetch(`${BASE_URL}/income`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email: userEmail }),
@@ -48,7 +49,7 @@ function Income() {
       ...(editId && { id: editId })
     };
 
-    fetch("http://localhost/CurrenClever_Backend/income.php", {
+    fetch(`${BASE_URL}/income`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
