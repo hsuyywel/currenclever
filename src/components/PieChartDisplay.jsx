@@ -93,6 +93,8 @@ const PieChartDisplay = ({
   actualYear,
   estimatedMonth,
   estimatedYear,
+  actualTotal,
+  estimatedTotal,
 }) => {
   const formatLabel = (month, year) => {
     const monthNames = [
@@ -115,9 +117,12 @@ const PieChartDisplay = ({
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-6xl mt-10">
       <div className="bg-white rounded-3xl shadow-lg p-6 border border-gray-100">
-        <h3 className="text-center font-bold text-xl text-blue-700 mb-4">
+        <h3 className="text-center font-bold text-xl text-blue-700 mb-2">
           Actual Budget ({formatLabel(actualMonth, actualYear)})
         </h3>
+        <p className="text-center text-sm text-gray-500 mb-4">
+          Total: £{actualTotal?.toFixed(2)}
+        </p>
         {isEmptyData(actual) ? (
           <NoDataMessage label="actual" />
         ) : (
@@ -126,9 +131,12 @@ const PieChartDisplay = ({
       </div>
 
       <div className="bg-white rounded-3xl shadow-lg p-6 border border-gray-100">
-        <h3 className="text-center font-bold text-xl text-purple-700 mb-4">
+        <h3 className="text-center font-bold text-xl text-purple-700 mb-2">
           Estimated Budget ({formatLabel(estimatedMonth, estimatedYear)})
         </h3>
+        <p className="text-center text-sm text-gray-500 mb-4">
+          Total: £{estimatedTotal?.toFixed(2)}
+        </p>
         {isEmptyData(estimated) ? (
           <NoDataMessage label="estimated" />
         ) : (

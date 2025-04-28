@@ -4,6 +4,7 @@ import "react-toastify/dist/ReactToastify.css";
 import {
   LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer
 } from "recharts";
+import { startOfWeek, format } from "date-fns"; // ✅ Added for weekly grouping
 
 function Income() {
   const [incomeList, setIncomeList] = useState([]);
@@ -15,7 +16,7 @@ function Income() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  const currencyOptions = ["GBP", "USD", "HKD", "JPY", "EUR"]; // kept for compatibility
+  const currencyOptions = ["GBP", "USD", "HKD", "JPY", "EUR"];
 
   const fetchIncome = () => {
     fetch("http://localhost/CurrenClever_Backend/income.php", {
@@ -89,11 +90,37 @@ function Income() {
     currentPage * itemsPerPage
   );
 
-  const chartData = incomeList.filter(item => {
-    const currencyMatch = chartFilters.currency ? item.currency === chartFilters.currency : true;
-    const dateMatch = chartFilters.date ? item.date.includes(chartFilters.date) : true;
-    return currencyMatch && dateMatch;
-  });
+  // ✅ Weekly grouped + 3-week moving average
+  const weeklyChartData = (() => {
+    const filtered = (incomeList || []).filter(item => {
+      const currencyMatch = chartFilters.currency ? item.currency === chartFilters.currency : true;
+      const dateMatch = chartFilters.date ? item.date.includes(chartFilters.date) : true;
+      return currencyMatch && dateMatch;
+    });
+
+    const groupedByWeek = {};
+    filtered.forEach(item => {
+      const weekStart = format(startOfWeek(new Date(item.date), { weekStartsOn: 1 }), "yyyy-MM-dd");
+      if (!groupedByWeek[weekStart]) {
+        groupedByWeek[weekStart] = 0;
+      }
+      groupedByWeek[weekStart] += parseFloat(item.amount) || 0;
+    });
+
+    const weekArray = Object.entries(groupedByWeek).map(([week, amount]) => ({
+      week,
+      amount
+    })).sort((a, b) => new Date(a.week) - new Date(b.week));
+
+    const movingAvgArray = weekArray.map((entry, index, arr) => {
+      const start = Math.max(0, index - 2);
+      const slice = arr.slice(start, index + 1);
+      const avg = slice.reduce((sum, e) => sum + e.amount, 0) / slice.length;
+      return { ...entry, movingAvg: avg };
+    });
+
+    return movingAvgArray;
+  })();
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-pink-100 to-blue-50 p-6">
@@ -111,7 +138,7 @@ function Income() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <input type="number" name="amount" placeholder="Amount" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} required className="w-full border rounded p-2" />
           <select name="currency" value={form.currency} onChange={(e) => setForm({ ...form, currency: e.target.value })} className="w-full border rounded p-2">
-            <option value="GBP">GBP</option>
+            {currencyOptions.map((c) => (<option key={c}>{c}</option>))}
           </select>
           <input type="date" name="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} required className="w-full border rounded p-2" />
           <input type="text" name="note" placeholder="Note" value={form.note} onChange={(e) => setForm({ ...form, note: e.target.value })} className="w-full border rounded p-2" />
@@ -121,38 +148,42 @@ function Income() {
         </form>
       </div>
 
+      {/* Chart and Table */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Chart */}
         <div className="bg-white rounded-2xl shadow p-6">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-semibold text-blue-700">Income Chart</h3>
             <div className="flex gap-2">
               <input
-                type="text"
+                type="month"
                 placeholder="Filter date"
-                className="border p-1 text-sm rounded"
+                className="border p-2 text-sm rounded"
                 value={chartFilters.date}
                 onChange={(e) => setChartFilters(prev => ({ ...prev, date: e.target.value }))}
               />
               <select
-                className="border p-1 text-sm rounded"
+                className="border p-2 text-sm rounded"
                 value={chartFilters.currency}
                 onChange={(e) => setChartFilters(prev => ({ ...prev, currency: e.target.value }))}
               >
-                <option value="GBP">GBP</option>
+                {currencyOptions.map((c) => (
+                  <option key={c}>{c}</option>
+                ))}
               </select>
             </div>
           </div>
           <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={chartData}>
+            <LineChart data={weeklyChartData}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="date" />
+              <XAxis dataKey="week" />
               <YAxis />
-              <Tooltip />
-              <Line type="monotone" dataKey="amount" stroke="#2563eb" />
+              <Tooltip formatter={(value) => [`£${value.toFixed(2)}`, "Amount"]} />
+              <Line type="monotone" dataKey="amount" stroke="#2563eb" strokeWidth={2} name="Weekly Income" />
+              <Line type="monotone" dataKey="movingAvg" stroke="#6b21a8" strokeWidth={3} strokeDasharray="5 5" dot={false} name="3-Week Avg" />
             </LineChart>
           </ResponsiveContainer>
         </div>
-
         <div className="bg-white rounded-2xl shadow p-6 overflow-auto">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-semibold text-blue-700">Income Records</h3>

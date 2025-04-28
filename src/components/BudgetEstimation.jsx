@@ -58,6 +58,10 @@ function BudgetEstimation() {
       });
   }, [user, selectedMonth, selectedYear]);
 
+  // ✅ Enhancement: calculate totals
+  const actualTotal = actual.reduce((sum, val) => sum + Number(val), 0);
+  const estimatedTotal = estimated.reduce((sum, val) => sum + Number(val), 0);
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-pink-100 to-blue-50 flex flex-col items-center justify-center px-4">
       <div className="bg-white px-8 py-10 rounded-3xl shadow-2xl w-full max-w-xl mb-8">
@@ -83,14 +87,16 @@ function BudgetEstimation() {
       {isLoading ? (
         <p className="text-blue-600 font-medium">🔄 Loading your budget data...</p>
       ) : (
-        <PieChartDisplay
-          actual={actual}
-          estimated={estimated}
-          actualMonth={selectedMonth}
-          actualYear={selectedYear}
-          estimatedMonth={nextMonth}
-          estimatedYear={nextYear}
-        />
+      <PieChartDisplay
+        actual={actual}
+        estimated={estimated}
+        actualMonth={selectedMonth}
+        actualYear={selectedYear}
+        estimatedMonth={nextMonth}
+        estimatedYear={nextYear}
+        actualTotal={actualTotal}
+        estimatedTotal={estimatedTotal}
+      /> 
       )}
     </div>
   );

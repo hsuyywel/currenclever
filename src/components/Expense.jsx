@@ -4,6 +4,7 @@ import "react-toastify/dist/ReactToastify.css";
 import {
   LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer
 } from "recharts";
+import { startOfWeek, format } from "date-fns"; // ✅ Added
 
 function Expense() {
   const [expenseList, setExpenseList] = useState([]);
@@ -20,28 +21,27 @@ function Expense() {
 
   const fetchExpense = (email) => {
     fetch("http://localhost/CurrenClever_Backend/expense.php", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) setExpenseList(data.expenses);
+        else toast.error(data.error || "Failed to fetch expenses");
       })
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.success) setExpenseList(data.expenses);
-          else toast.error(data.error || "Failed to fetch expenses");
-        })
-        .catch(() => toast.error("Server error"));
+      .catch(() => toast.error("Server error"));
   };
-  
+
   useEffect(() => {
     const email = localStorage.getItem("userEmail");
     if (email) {
       setUserEmail(email);
-      fetchExpense(email); // pass it in
+      fetchExpense(email);
     } else {
       toast.error("User email not found. Please login.");
     }
   }, []);
-  
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -62,7 +62,7 @@ function Expense() {
           toast.success(editId ? "Expense updated" : "Expense added");
           setForm({ amount: "", currency: "GBP", date: "", note: "", category: "" });
           setEditId(null);
-          fetchExpense(userEmail); // ✅ Fix: pass the email here!
+          fetchExpense(userEmail);
         } else {
           toast.error(data.error || "Failed to save expense");
         }
@@ -83,7 +83,7 @@ function Expense() {
   const filteredData = (expenseList || []).filter((item) =>
     (!filters.date || item.date.includes(filters.date)) &&
     (!filters.amount || String(item.amount).includes(filters.amount)) &&
-    (!filters.currency || item.currency.toLowerCase().includes(filters.currency.toLowerCase())) &&
+    (!filters.currency || item.currency?.toLowerCase().includes(filters.currency.toLowerCase())) &&
     (!filters.note || item.note?.toLowerCase().includes(filters.note.toLowerCase())) &&
     (!filters.category || item.category?.toLowerCase().includes(filters.category.toLowerCase()))
   );
@@ -94,11 +94,37 @@ function Expense() {
     currentPage * itemsPerPage
   );
 
-  const chartData = (expenseList || []).filter(item => {
-    const currencyMatch = chartFilters.currency ? item.currency === chartFilters.currency : true;
-    const dateMatch = chartFilters.date ? item.date.includes(chartFilters.date) : true;
-    return currencyMatch && dateMatch;
-  });
+  // ✅ Weekly Grouping and 3-week Moving Average
+  const weeklyChartData = (() => {
+    const filtered = (expenseList || []).filter((item) => {
+      const currencyMatch = chartFilters.currency ? item.currency === chartFilters.currency : true;
+      const dateMatch = chartFilters.date ? item.date.includes(chartFilters.date) : true;
+      return currencyMatch && dateMatch;
+    });
+
+    const groupedByWeek = {};
+    filtered.forEach(item => {
+      const weekStart = format(startOfWeek(new Date(item.date), { weekStartsOn: 1 }), "yyyy-MM-dd");
+      if (!groupedByWeek[weekStart]) {
+        groupedByWeek[weekStart] = 0;
+      }
+      groupedByWeek[weekStart] += parseFloat(item.amount) || 0;
+    });
+
+    const weekArray = Object.entries(groupedByWeek).map(([week, amount]) => ({
+      week,
+      amount
+    })).sort((a, b) => new Date(a.week) - new Date(b.week));
+
+    const movingAvgArray = weekArray.map((entry, index, arr) => {
+      const start = Math.max(0, index - 2);
+      const slice = arr.slice(start, index + 1);
+      const avg = slice.reduce((sum, e) => sum + e.amount, 0) / slice.length;
+      return { ...entry, movingAvg: avg };
+    });
+
+    return movingAvgArray;
+  })();
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-pink-100 p-6">
@@ -130,57 +156,64 @@ function Expense() {
         </form>
       </div>
 
-      {/* Chart and Table side-by-side */}
+      {/* Chart and Table */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Chart */}
         <div className="bg-white rounded-2xl shadow p-6">
-            <div className="flex justify-between items-center mb-4">
-                <h3 className="text-xl font-bold text-pink-600">Expense Chart</h3>
-                <div className="flex items-center gap-2">
-                <input
-                    type="month"
-                    value={chartFilters.date}
-                    onChange={(e) =>
-                    setChartFilters((prev) => ({ ...prev, date: e.target.value }))
-                    }
-                    className="border border-gray-300 rounded p-2 text-sm placeholder:text-gray-400"
-                    placeholder="Filter date"
-                />
-                <select
-                    value={chartFilters.currency}
-                    onChange={(e) =>
-                    setChartFilters((prev) => ({ ...prev, currency: e.target.value }))
-                    }
-                    className="border border-gray-300 rounded p-2 text-sm"
-                >
-                    {currencyOptions.map((c) => (
-                    <option key={c} value={c}>
-                        {c}
-                    </option>
-                    ))}
-                </select>
-                </div>
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-xl font-bold text-pink-600">Expense Chart</h3>
+            <div className="flex items-center gap-2">
+              <input
+                type="month"
+                value={chartFilters.date}
+                onChange={(e) => setChartFilters((prev) => ({ ...prev, date: e.target.value }))}
+                className="border border-gray-300 rounded p-2 text-sm"
+                placeholder="Filter date"
+              />
+              <select
+                value={chartFilters.currency}
+                onChange={(e) => setChartFilters((prev) => ({ ...prev, currency: e.target.value }))}
+                className="border border-gray-300 rounded p-2 text-sm"
+              >
+                {currencyOptions.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </select>
             </div>
+          </div>
 
-            <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" />
-                <YAxis />
-                <Tooltip />
-                <Line
-                    type="monotone"
-                    dataKey="amount"
-                    stroke="#db2777"
-                    strokeWidth={2}
-                    dot={{ r: 4 }}
-                    activeDot={{ r: 6 }}
-                />
-                </LineChart>
-            </ResponsiveContainer>
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={weeklyChartData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="week" />
+              <YAxis />
+              <Tooltip formatter={(value) => [`£${value.toFixed(2)}`, "Amount"]} />
+              <Line
+                type="monotone"
+                dataKey="amount"
+                stroke="#db2777"
+                strokeWidth={2}
+                dot={{ r: 4 }}
+                activeDot={{ r: 6 }}
+                name="Weekly Expense"
+              />
+              <Line
+                type="monotone"
+                dataKey="movingAvg"
+                stroke="#6366f1"
+                strokeWidth={3}
+                strokeDasharray="5 5"
+                dot={false}
+                name="3-Week Avg"
+              />
+            </LineChart>
+          </ResponsiveContainer>
         </div>
-        {/* Table */}
-        <div className="bg-white rounded-2xl shadow p-6 overflow-auto">
+
+       {/* Table */}
+       <div className="bg-white rounded-2xl shadow p-6 overflow-auto">
           <h3 className="text-lg font-semibold text-pink-700 mb-4">Expense Records</h3>
           <table className="w-full text-sm text-left">
             <thead className="bg-pink-100">
